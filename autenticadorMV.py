@@ -47,9 +47,21 @@ t5.until(EC.element_to_be_clickable((By.XPATH,'//a/span[text()="Autenticação"]
 
 for counter in range(len(df.index)):
   cod = df.iloc[counter,0]
+  print(cod)
   t5.until(EC.element_to_be_clickable((By.ID,'competencia_chzn'))).click()
   t5.until(EC.element_to_be_clickable((By.ID,'competencia_chzn_o_1'))).click()
   t5.until(EC.element_to_be_clickable((By.ID,'codBar'))).send_keys(cod)
   t5.until(EC.element_to_be_clickable((By.ID,'codBar'))).send_keys(Keys.ENTER)
-
+  time.sleep(3)
+  try:
+    uiHeader = driver.find_element(By.XPATH,'//div/span[text()="Informações Obrigatórias"]').get_attribute('innerText')
+    print(uiHeader)
+    rows = driver.find_elements(By.XPATH,"//table/tbody/tr")
+    print(len(rows))
+  except:
+    t5.until(EC.element_to_be_clickable((By.XPATH,'//a/span[text()="close"]'))).click()
+    t5.until(EC.element_to_be_clickable((By.ID,'competencia_chzn_o_2'))).click()
+    t5.until(EC.element_to_be_clickable((By.ID,'codBar'))).send_keys(cod)
+    t5.until(EC.element_to_be_clickable((By.ID,'codBar'))).send_keys(Keys.ENTER)
+    time.sleep(1)
 time.sleep(1)
