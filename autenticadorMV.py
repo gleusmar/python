@@ -141,7 +141,10 @@ try:
           continue
       except: pass
       
-      time.sleep(1.5)
+      el = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "load_grid_info")))
+      WebDriverWait(driver, 10).until(lambda d: 'display: block' in el.get_attribute('style'))
+      WebDriverWait(driver, 10).until(lambda d: 'display: block' not in el.get_attribute('style'))
+
       styleGrid = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Informações Obrigatórias')]]").get_attribute('style')
       if "display: block" in styleGrid:
         try:
