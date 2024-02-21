@@ -34,18 +34,6 @@ class AnyEc:
             except:
                 pass
             
-'''def salvaResultado():
-  df.loc[:, "Resultado"] = result
-
-  wb_col = load_workbook(path)
-  sheet = wb_col.active
-  sheet.insert_cols(idx=3)
-  wb_col.save(path)
-
-  print(df)
-  with pd.ExcelWriter(path) as writer:
-    writer.book = openpyxl.load_workbook(path)
-    df.to_excel(writer, sheet_name='Planilha1')'''
 def salva(resultado):
   wb = openpyxl.load_workbook(path)
   ws = wb.active
@@ -68,6 +56,10 @@ def lancarBiomedico():
       time.sleep(0.6)
       rows[1].find_element(By.XPATH,"//td[7]/div/a").click()
       time.sleep(0.3)
+      rows[1].find_element(By.XPATH,"//td[7]/div/div/div/input").click()
+      time.sleep(0.1)
+      rows[1].find_element(By.XPATH,"//td[7]/div/div/div/input").clear()
+      time.sleep(0.1)
       rows[1].find_element(By.XPATH,"//td[7]/div/div/div/input").send_keys("glauceni")
       time.sleep(0.3)
       rows[1].find_element(By.XPATH,"//td[7]/div/div/div/input").send_keys(Keys.ENTER)
@@ -76,6 +68,10 @@ def lancarBiomedico():
       time.sleep(0.3)
       rows[1].find_element(By.XPATH,"//td[9]/div/a").click()
       time.sleep(0.3)
+      rows[1].find_element(By.XPATH,"//td[9]/div/div/div/input").click()
+      time.sleep(0.1)
+      rows[1].find_element(By.XPATH,"//td[9]/div/div/div/input").clear()
+      time.sleep(0.1)
       rows[1].find_element(By.XPATH,"//td[9]/div/div/div/input").send_keys("221205")
       time.sleep(0.3)
       rows[1].find_element(By.XPATH,"//td[9]/div/div/div/input").send_keys(Keys.ENTER)
@@ -84,14 +80,24 @@ def lancarBiomedico():
     except:
       i += 1
       print(cod + " - Tentativa " + str(i))
+
+def confereCbos():
+  fail = False
+  listaCbos = []
+  cbos = driver.find_elements(By.XPATH,"//table[@id='grid_info']/tbody/tr/td[9]/div/a")
+  for cbo in cbos:
+    listaCbos.append(cbo.text)
+  if "Selecione uma opção" in listaCbos or "..." in listaCbos:
+    fail = True
+  return fail
+
+
      
 try:
   log = []
   driver = webdriver.Chrome()
   driver.maximize_window()
   action = ActionChains(driver)
-  #driver.get('https://nowsecure.nl')
-  #time.sleep(4)
   driver.get("http://c2896prd.cloudmv.com.br/sigss/login")
   time.sleep(1)
   t5 = WebDriverWait(driver, 5)
@@ -109,6 +115,9 @@ try:
 
   for counter in range(len(df.index)):
     cod = df.iloc[counter,0]
+    result = df.iloc[counter,1]
+    if result == "Guia autenticada com sucesso" or result == "Guia já autenticada!":
+      continue
     for i in range(2):
       k = i + 2
       time.sleep(1)
@@ -132,7 +141,6 @@ try:
         msgSistema = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Mensagem do sistema')]]").get_attribute('innerText')
         if "display-block" in classMsgSistema and "já foi autenticado" in msgSistema:
           print(cod + " - Guia já autenticada!")
-          #result.append("Guia já autenticada!")
           salva("Guia já autenticada!")
           t5.until(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(., "OK")]'))).click()
           break
@@ -141,8 +149,7 @@ try:
           continue
       except: pass
       
-      el = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "load_grid_info")))
-      WebDriverWait(driver, 10).until(lambda d: 'display: block' in el.get_attribute('style'))
+      el = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "load_grid_info")))
       WebDriverWait(driver, 10).until(lambda d: 'display: block' not in el.get_attribute('style'))
 
       styleGrid = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Informações Obrigatórias')]]").get_attribute('style')
@@ -151,6 +158,11 @@ try:
           rows = driver.find_elements(By.XPATH,"//table[@id='grid_info']/tbody/tr")
           if not rows[1].find_element(By.XPATH,"//td[7]/select").get_attribute("disabled"):
             lancarBiomedico()
+            if confereCbos() is True:
+              salva("Não foi possível autenticar a guia! - CBO não disponível para algum(ns) procedimento(s).")
+              driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
+              break
+               
           time.sleep(1.3)
           driver.find_element(By.XPATH, "//button/span[contains(.,'Gravar')]").click()
           try:
@@ -161,7 +173,6 @@ try:
               print(cod + " - Não foi possível autenticar a guia!")
               salva("Não foi possível autenticar a guia!")
               driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
-              #driver.find_element(By.XPATH, "//button/span[contains(.,'Voltar')]").click()
               time.sleep(0.5)
               break
           except: pass
@@ -176,22 +187,17 @@ try:
             print(cod + " - Não foi possível autenticar a guia!")
             salva("Não foi possível autenticar a guia!")
             driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
-            #driver.find_element(By.XPATH, "//button/span[contains(.,'Voltar')]").click()
             time.sleep(0.5)
             break
         except :
           time.sleep(1)
           print(cod + " - Não foi possível autenticar a guia!")
-          #result.append("Não foi possível autenticar a guia!")
           salva("Não foi possível autenticar a guia!")
           driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
-          #driver.find_element(By.XPATH, "//button/span[contains(.,'Voltar')]").click()
-          #/html/body/div[9]/div[3]/div/button[2]/span[2]
-          time(2)
+          el = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.XPATH, "//div[./div/span[contains(text(),'Informações Obrigatórias')]]")))
+          WebDriverWait(driver, 10).until(lambda d: 'display: block' not in el.get_attribute('style'))
           break
       el = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.XPATH, "//div[./div/span[contains(text(),'Informações Obrigatórias')]]")))
       WebDriverWait(driver, 10).until(lambda d: 'display: block' not in el.get_attribute('style'))
 except RuntimeError as error:
   print(error)
-  #salvaResultado()
-#salvaResultado()
