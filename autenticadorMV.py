@@ -82,14 +82,14 @@ def lancarBiomedico():
       print(cod + " - Tentativa " + str(i))
 
 def confereCbos():
-  fail = False
-  listaCbos = []
+  examesProblema = []
   cbos = driver.find_elements(By.XPATH,"//table[@id='grid_info']/tbody/tr/td[9]/div/a")
-  for cbo in cbos:
-    listaCbos.append(cbo.text)
-  if "Selecione uma opção" in listaCbos or "..." in listaCbos:
-    fail = True
-  return fail
+  exames = driver.find_elements(By.XPATH,"//table[@id='grid_info']/tbody/tr/td[3]")
+  for i in range(len(cbos)):
+    if cbos[i].text == "Selecione uma opção"  or cbos[i].text == "...":
+      examesProblema.append(exames[i+1].text)
+  s = ' e '.join(examesProblema)
+  return s
 
 
      
@@ -113,10 +113,16 @@ try:
   t5.until(EC.element_to_be_clickable((By.XPATH,'//button/span[text()="Faturamento"]'))).click()
   t5.until(EC.element_to_be_clickable((By.XPATH,'//a/span[text()="Autenticação"]'))).click()
 
+  sucesso = 0
+  problemas = 0
+  jaAutenticadas = 0
+  pulei = 0
+  print("Lista tem " + str(len(df.index)) + " guias")
   for counter in range(len(df.index)):
     cod = df.iloc[counter,0]
     result = df.iloc[counter,1]
-    if result == "Guia autenticada com sucesso" or result == "Guia já autenticada!":
+    if result == "Guia autenticada com sucesso" or result == "Guia já autenticada!" or "Erro" in str(result):
+      pulei =+ 1
       continue
     for i in range(2):
       k = i + 2
@@ -140,6 +146,7 @@ try:
         classMsgSistema = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Mensagem do sistema')]]").get_attribute('class')
         msgSistema = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Mensagem do sistema')]]").get_attribute('innerText')
         if "display-block" in classMsgSistema and "já foi autenticado" in msgSistema:
+          jaAutenticadas =+ 1
           print(cod + " - Guia já autenticada!")
           salva("Guia já autenticada!")
           t5.until(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(., "OK")]'))).click()
@@ -158,9 +165,12 @@ try:
           rows = driver.find_elements(By.XPATH,"//table[@id='grid_info']/tbody/tr")
           if not rows[1].find_element(By.XPATH,"//td[7]/select").get_attribute("disabled"):
             lancarBiomedico()
-            if confereCbos() is True:
-              salva("Não foi possível autenticar a guia! - CBO não disponível para algum(ns) procedimento(s).")
+            confere = confereCbos()
+            if confere:
               driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
+              problemas =+ 1
+              print(cod +" - "+ confere)
+              salva("Erros no(s) exame(s): " + confere)
               break
                
           time.sleep(1.3)
@@ -170,6 +180,7 @@ try:
             msgSistema = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Mensagem do sistema')]]").get_attribute('innerText')
             if "display-block" in classMsgSistema and "CBO não informado!" in msgSistema:
               t5.until(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(., "OK")]'))).click()
+              problemas =+ 1
               print(cod + " - Não foi possível autenticar a guia!")
               salva("Não foi possível autenticar a guia!")
               driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
@@ -179,17 +190,20 @@ try:
           try:
             el = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.XPATH, "//div[./div/span[contains(text(),'Informações Obrigatórias')]]")))
             WebDriverWait(driver, 10).until(lambda d: 'display: block' not in el.get_attribute('style'))
+            sucesso =+ 1
             print(cod + " - Guia autenticada com sucesso")
             salva("Guia autenticada com sucesso")
             time.sleep(0.5)
             break
           except:
+            problemas =+ 1
             print(cod + " - Não foi possível autenticar a guia!")
             salva("Não foi possível autenticar a guia!")
             driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
             time.sleep(0.5)
             break
         except :
+          problemas =+ 1
           time.sleep(1)
           print(cod + " - Não foi possível autenticar a guia!")
           salva("Não foi possível autenticar a guia!")
@@ -199,5 +213,10 @@ try:
           break
       el = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.XPATH, "//div[./div/span[contains(text(),'Informações Obrigatórias')]]")))
       WebDriverWait(driver, 10).until(lambda d: 'display: block' not in el.get_attribute('style'))
+  print(str(counter) + " autorizações trabalhadas!")
+  print(str(sucesso) + " autorizações autenticadas com sucesso!")
+  print(str(problemas) + " autorizações com erros!")
+  print(str(jaAutenticadas) + " autorizações novas que tentei autenticar, mas já estavam autenticadas!")
+  print(str(pulei) + " autorizações estavam na lista mas foram autenticadas em outra rotina anterior")
 except RuntimeError as error:
   print(error)
