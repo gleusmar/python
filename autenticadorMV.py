@@ -122,7 +122,8 @@ try:
     cod = df.iloc[counter,0]
     result = df.iloc[counter,1]
     if result == "Guia autenticada com sucesso" or result == "Guia já autenticada!" or "Erro" in str(result):
-      pulei =+ 1
+      pulei += 1
+      print(cod + " - Pulei " + str(pulei))
       continue
     for i in range(2):
       k = i + 2
@@ -146,7 +147,7 @@ try:
         classMsgSistema = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Mensagem do sistema')]]").get_attribute('class')
         msgSistema = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Mensagem do sistema')]]").get_attribute('innerText')
         if "display-block" in classMsgSistema and "já foi autenticado" in msgSistema:
-          jaAutenticadas =+ 1
+          jaAutenticadas += 1
           print(cod + " - Guia já autenticada!")
           salva("Guia já autenticada!")
           t5.until(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(., "OK")]'))).click()
@@ -168,7 +169,7 @@ try:
             confere = confereCbos()
             if confere:
               driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
-              problemas =+ 1
+              problemas += 1
               print(cod +" - "+ confere)
               salva("Erros no(s) exame(s): " + confere)
               break
@@ -180,7 +181,7 @@ try:
             msgSistema = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Mensagem do sistema')]]").get_attribute('innerText')
             if "display-block" in classMsgSistema and "CBO não informado!" in msgSistema:
               t5.until(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(., "OK")]'))).click()
-              problemas =+ 1
+              problemas += 1
               print(cod + " - Não foi possível autenticar a guia!")
               salva("Não foi possível autenticar a guia!")
               driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
@@ -190,20 +191,20 @@ try:
           try:
             el = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.XPATH, "//div[./div/span[contains(text(),'Informações Obrigatórias')]]")))
             WebDriverWait(driver, 10).until(lambda d: 'display: block' not in el.get_attribute('style'))
-            sucesso =+ 1
+            sucesso += 1
             print(cod + " - Guia autenticada com sucesso")
             salva("Guia autenticada com sucesso")
             time.sleep(0.5)
             break
           except:
-            problemas =+ 1
+            problemas += 1
             print(cod + " - Não foi possível autenticar a guia!")
             salva("Não foi possível autenticar a guia!")
             driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
             time.sleep(0.5)
             break
         except :
-          problemas =+ 1
+          problemas += 1
           time.sleep(1)
           print(cod + " - Não foi possível autenticar a guia!")
           salva("Não foi possível autenticar a guia!")
@@ -213,10 +214,39 @@ try:
           break
       el = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.XPATH, "//div[./div/span[contains(text(),'Informações Obrigatórias')]]")))
       WebDriverWait(driver, 10).until(lambda d: 'display: block' not in el.get_attribute('style'))
-  print(str(counter) + " autorizações trabalhadas!")
+
+  finalID = driver.find_elements(By.XPATH,"//table[@id='grid_busca']/tbody/tr/td[2]")
+  finalNome = driver.find_elements(By.XPATH,"//table[@id='grid_busca']/tbody/tr/td[4]")
+  finalData = driver.find_elements(By.XPATH,"//table[@id='grid_busca']/tbody/tr/td[5]")
+  finalLocal = driver.find_elements(By.XPATH,"//table[@id='grid_busca']/tbody/tr/td[6]")
+  finalQtdAut = driver.find_elements(By.XPATH,"//table[@id='grid_busca']/tbody/tr/td[7]")
+  finalQtdReal = driver.find_elements(By.XPATH,"//table[@id='grid_busca']/tbody/tr/td[8]")
+  gridfinal = [finalID,finalNome,finalData,finalLocal,finalQtdAut,finalQtdReal]
+  guia = 0
+  dadosGuia=[]
+  wb = openpyxl.load_workbook(path)
+  ws = wb["Planilha2"]
+  linha = len(ws['A'])
+  print("Linha a começar: " + str(linha))
+  print("Qtd de guias no grid: " + str(len(finalNome)))
+  for guia in range(len(finalNome)):
+    if guia == 0:
+      continue
+    dadosGuia=[]
+    for i in range(6):
+      if i == 0:
+        ws.cell(row=linha+guia, column=i+1).value = gridfinal[i][guia].get_attribute("title")
+        dadosGuia.append("EXAM-"+gridfinal[i][guia].text)
+      ws.cell(row=linha+guia, column=i+1).value = gridfinal[i][guia].text
+      dadosGuia.append(gridfinal[i][guia].text)
+    k =" ".join(dadosGuia)
+    print("Linha: " + str(linha+guia) + " - " + k)
+  wb.save(path)
+      
+  print(str(counter+1) + " autorizações trabalhadas!")
   print(str(sucesso) + " autorizações autenticadas com sucesso!")
   print(str(problemas) + " autorizações com erros!")
   print(str(jaAutenticadas) + " autorizações novas que tentei autenticar, mas já estavam autenticadas!")
-  print(str(pulei) + " autorizações estavam na lista mas foram autenticadas em outra rotina anterior")
+  print(str(pulei) + " autorizações estavam na lista mas foram passadas em outra rotina anterior")
 except RuntimeError as error:
   print(error)
