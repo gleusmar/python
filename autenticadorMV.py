@@ -40,7 +40,6 @@ def salva(resultado):
   ws.cell(row=counter+2, column=2).value = resultado
   wb.save(path)
 
-
 def salvaResultado():
   wb = openpyxl.load_workbook(path)
   ws = wb.active
@@ -91,6 +90,14 @@ def confereCbos():
   s = ' e '.join(examesProblema)
   return s
 
+def procTextTd(h,i):
+  return driver.find_element(By.XPATH,f"//table[@id='grid_busca']/tbody/tr[{h}]/td[{i}]").text
+
+def salvaTd(innerText,col):
+  wb = openpyxl.load_workbook(path)
+  ws = wb.active
+  ws.cell(row=counter+2, column=col).value = innerText
+  wb.save(path)
 
      
 try:
@@ -154,6 +161,9 @@ try:
           break
         if "display-block" in classMsgSistema and "fora da faixa" in msgSistema:
           t5.until(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(., "OK")]'))).click()
+          if i == 2:
+            print(cod + " - Guia fora da data de autenticação!")
+            salva("Guia está fora da faixa permitida para a competência")
           continue
       except: pass
       
@@ -195,6 +205,11 @@ try:
             print(cod + " - Guia autenticada com sucesso")
             salva("Guia autenticada com sucesso")
             time.sleep(0.5)
+            grid = driver.find_elements(By.XPATH,"//table[@id='grid_busca']/tbody/tr")
+            tamanhoGrid = len(grid)
+            for i in range(2, 9):
+              salvaTd(procTextTd(tamanhoGrid,i),i+1)
+            salvaTd(time.asctime(),10)
             break
           except:
             problemas += 1
@@ -227,8 +242,7 @@ try:
   wb = openpyxl.load_workbook(path)
   ws = wb["Planilha2"]
   linha = len(ws['A'])
-  print("Linha a começar: " + str(linha))
-  print("Qtd de guias no grid: " + str(len(finalNome)))
+
   for guia in range(len(finalNome)):
     if guia == 0:
       continue
@@ -239,8 +253,8 @@ try:
         dadosGuia.append("EXAM-"+gridfinal[i][guia].text)
       ws.cell(row=linha+guia, column=i+1).value = gridfinal[i][guia].text
       dadosGuia.append(gridfinal[i][guia].text)
+    ws.cell(row=linha+guia, column=7).value = time.asctime(time.localtime())
     k =" ".join(dadosGuia)
-    print("Linha: " + str(linha+guia) + " - " + k)
   wb.save(path)
       
   print(str(counter+1) + " autorizações trabalhadas!")
