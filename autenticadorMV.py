@@ -17,7 +17,8 @@ import pandas as pd
 import openpyxl
 from openpyxl import load_workbook
 import time
-import re
+from sheetsApi import atualizaCelula
+
 
 path = 'Autorizações.xlsx'
 df = pd.read_excel(path)
