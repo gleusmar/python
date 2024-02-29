@@ -133,7 +133,7 @@ try:
       print(cod + " - Pulei " + str(pulei))
       continue
     for i in range(2):
-      k = i + 2
+      k = i + 1
       time.sleep(1)
       WebDriverWait(driver, 12).until(EC.element_to_be_clickable((By.ID,'competencia_chzn'))).click()
       time.sleep(0.5)
