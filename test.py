@@ -212,35 +212,7 @@ try:
           WebDriverWait(driver, 10).until(lambda d: 'display: block' not in el.get_attribute('style'))
           break
       esperaGridEsconder()
-
-  """finalID = driver.find_elements(By.XPATH,"//table[@id='grid_busca']/tbody/tr/td[2]")
-  finalNome = driver.find_elements(By.XPATH,"//table[@id='grid_busca']/tbody/tr/td[4]")
-  finalData = driver.find_elements(By.XPATH,"//table[@id='grid_busca']/tbody/tr/td[5]")
-  finalLocal = driver.find_elements(By.XPATH,"//table[@id='grid_busca']/tbody/tr/td[6]")
-  finalQtdAut = driver.find_elements(By.XPATH,"//table[@id='grid_busca']/tbody/tr/td[7]")
-  finalQtdReal = driver.find_elements(By.XPATH,"//table[@id='grid_busca']/tbody/tr/td[8]")
-  gridfinal = [finalID,finalNome,finalData,finalLocal,finalQtdAut,finalQtdReal]
-  guia = 0
-  dadosGuia=[]
-  wb = openpyxl.load_workbook(path)
-  ws = wb["Planilha2"]
-  linha = len(ws['A'])
-  print("Linha a começar: " + str(linha))
-  print("Qtd de guias no grid: " + str(len(finalNome)))
-  for guia in range(len(finalNome)):
-    if guia == 0:
-      continue
-    dadosGuia=[]
-    for i in range(6):
-      if i == 0:
-        ws.cell(row=linha+guia, column=i+1).value = gridfinal[i][guia].get_attribute("title")
-        dadosGuia.append("EXAM-"+gridfinal[i][guia].text)
-      ws.cell(row=linha+guia, column=i+1).value = gridfinal[i][guia].text
-      dadosGuia.append(gridfinal[i][guia].text)
-    k =" ".join(dadosGuia)
-    print("Linha: " + str(linha+guia) + " - " + k)
-  wb.save(path)"""
-      
+            
   print(str(counter+1) + " autorizações trabalhadas!")
   print(str(sucesso) + " autorizações autenticadas com sucesso!")
   print(str(problemas) + " autorizações com erros!")
