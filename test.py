@@ -78,18 +78,14 @@ def confereCbos():
   return s
 
 def ultimaLinhaAutenticados():
-  html = driver.page_source
-  soup = BeautifulSoup(html,'html.parser')
-  div = soup.select_one("table#grid_busca")
-  table = pd.read_html(StringIO(str(div)))
-  print("table/n",table)
-  print("len(table)/n",len(table))
-  print("table[len(table)-1/n",table[len(table)-1])
-  print("table[1:]/n",table[1:])
-  print("table[-1]/n",table[-1])
-  print("table[:-1]/n",table[:-1])
-
-  return table[-1]
+  table = driver.find_element(By.ID,"grid_busca")
+  rows = table.find_elements(By.TAG_NAME,"tr")
+  lastrow = rows[len(rows)-1]
+  tds = lastrow.find_elements(By.TAG_NAME,"td")
+  array=[]
+  for td in tds:
+    array.append(td.text)
+  return [array]
 
 def esperaGridEsconder():
   el = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.XPATH, "//div[./div/span[contains(text(),'Informações Obrigatórias')]]")))
@@ -125,11 +121,11 @@ try:
   for counter in range(len(df.index)):
     cod = df.iloc[counter,0]
     result = df.iloc[counter,1]
-    if result == "Guia autenticada com sucesso" or result == "Guia já autenticada!" or "Erro" in str(result):
+    if result == "Guia autenticada com sucesso!" or result == "Guia já autenticada!" or "Erro" in str(result):
       pulei += 1
       continue
     for i in range(2):
-      k = i + 2
+      k = i + 1
       time.sleep(1)
       WebDriverWait(driver, 12).until(EC.element_to_be_clickable((By.ID,'competencia_chzn'))).click()
       time.sleep(0.5)
@@ -194,7 +190,7 @@ try:
           try:
             esperaGridEsconder()
             sucesso += 1
-            print(cod + " - Guia autenticada com sucesso")
+            print(cod + " - Guia autenticada com sucesso!")
             atualizaCelulas(counter+2,ultimaLinhaAutenticados())
             time.sleep(0.5)
             break
@@ -215,35 +211,7 @@ try:
           WebDriverWait(driver, 10).until(lambda d: 'display: block' not in el.get_attribute('style'))
           break
       esperaGridEsconder()
-
-  """finalID = driver.find_elements(By.XPATH,"//table[@id='grid_busca']/tbody/tr/td[2]")
-  finalNome = driver.find_elements(By.XPATH,"//table[@id='grid_busca']/tbody/tr/td[4]")
-  finalData = driver.find_elements(By.XPATH,"//table[@id='grid_busca']/tbody/tr/td[5]")
-  finalLocal = driver.find_elements(By.XPATH,"//table[@id='grid_busca']/tbody/tr/td[6]")
-  finalQtdAut = driver.find_elements(By.XPATH,"//table[@id='grid_busca']/tbody/tr/td[7]")
-  finalQtdReal = driver.find_elements(By.XPATH,"//table[@id='grid_busca']/tbody/tr/td[8]")
-  gridfinal = [finalID,finalNome,finalData,finalLocal,finalQtdAut,finalQtdReal]
-  guia = 0
-  dadosGuia=[]
-  wb = openpyxl.load_workbook(path)
-  ws = wb["Planilha2"]
-  linha = len(ws['A'])
-  print("Linha a começar: " + str(linha))
-  print("Qtd de guias no grid: " + str(len(finalNome)))
-  for guia in range(len(finalNome)):
-    if guia == 0:
-      continue
-    dadosGuia=[]
-    for i in range(6):
-      if i == 0:
-        ws.cell(row=linha+guia, column=i+1).value = gridfinal[i][guia].get_attribute("title")
-        dadosGuia.append("EXAM-"+gridfinal[i][guia].text)
-      ws.cell(row=linha+guia, column=i+1).value = gridfinal[i][guia].text
-      dadosGuia.append(gridfinal[i][guia].text)
-    k =" ".join(dadosGuia)
-    print("Linha: " + str(linha+guia) + " - " + k)
-  wb.save(path)"""
-      
+            
   print(str(counter+1) + " autorizações trabalhadas!")
   print(str(sucesso) + " autorizações autenticadas com sucesso!")
   print(str(problemas) + " autorizações com erros!")
