@@ -37,5 +37,5 @@ def atualizaCelula(x,y,value):
 
 def atualizaCelulas(x,value):
     worksheet.update(x,2,"Guia autenticada com sucesso!")
-    worksheet.update(f"B{x}:F{x}",value)
-    worksheet.update_cell(x,7,time.asctime())
+    worksheet.update(f"B{x}:J{x}",value)
+    worksheet.update_cell(x,11,time.asctime())
