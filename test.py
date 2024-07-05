@@ -39,21 +39,21 @@ def lancarBiomedico():
   i = 1
   while i <= 6:
     try:
-      time.sleep(0.6)
+      time.sleep(0.2)
       rows[1].find_element(By.XPATH,"//td[7]/div/a").click()
-      time.sleep(0.3)
+      time.sleep(0.2)
       rows[1].find_element(By.XPATH,"//td[7]/div/div/div/input").click()
-      time.sleep(0.1)
+      time.sleep(0.2)
       rows[1].find_element(By.XPATH,"//td[7]/div/div/div/input").clear()
-      time.sleep(0.1)
+      time.sleep(0.2)
       rows[1].find_element(By.XPATH,"//td[7]/div/div/div/input").send_keys("glauceni")
-      time.sleep(0.3)
+      time.sleep(0.2)
       rows[1].find_element(By.XPATH,"//td[7]/div/div/div/input").send_keys(Keys.ENTER)
-      time.sleep(0.3)
+      time.sleep(0.2)
       rows[1].find_element(By.XPATH,"//td[7]/div/div/ul/table/tbody/tr[2]/td[2]/div").click()
-      time.sleep(0.3)
+      time.sleep(0.2)
       rows[1].find_element(By.XPATH,"//td[9]/div/a").click()
-      time.sleep(0.3)
+      time.sleep(0.2)
       rows[1].find_element(By.XPATH,"//td[9]/div/div/div/input").click()
       time.sleep(0.1)
       rows[1].find_element(By.XPATH,"//td[9]/div/div/div/input").clear()
@@ -66,7 +66,6 @@ def lancarBiomedico():
     except:
       i += 1
       print(cod + " - Tentativa " + str(i))
-      
 
 def confereCbos():
   examesProblema = []
@@ -103,12 +102,14 @@ try:
   driver = webdriver.Chrome()
   driver.maximize_window()
   action = ActionChains(driver)
-  driver.get("http://c2896prd.cloudmv.com.br/mvsso/login?service=http%3A%2F%2Fc2896prd.cloudmv.com.br%2Fsigss%2Fauthentication%2Fcallback%3Fclient_name%3DCasClient")
+  driver.get("http://c2896prd.cloudmv.com.br/sigss/")
+  ### driver.get("http://c2896prd.cloudmv.com.br/mvsso/login?service=http%3A%2F%2Fc2896prd.cloudmv.com.br%2Fsigss%2Fauthentication%2Fcallback%3Fclient_name%3DCasClient")
   time.sleep(1)
   t5 = WebDriverWait(driver, 5)
 
   usuario = "04957832188"
-  senha = "36615886"
+  #senha = "36615886"
+  senha = "XLGPG@x@UQ9JTQv"
 
   t5.until(EC.element_to_be_clickable((By.ID,'username'))).send_keys(usuario)
   t5.until(EC.element_to_be_clickable((By.ID,'password'))).send_keys(senha)
@@ -130,7 +131,7 @@ try:
       pulei += 1
       continue
     for i in range(2):
-      k = i + 1
+      k = i + 2
       time.sleep(1)
       WebDriverWait(driver, 12).until(EC.element_to_be_clickable((By.ID,'competencia_chzn'))).click()
       time.sleep(0.5)
