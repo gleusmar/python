@@ -151,6 +151,11 @@ for counter in range(len(df.index)):
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@id="tabelaSolicitaProcedimento"]/tbody/tr[21]/td[4]/input'))).send_keys(Keys.DELETE)
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@id="tabelaSolicitaProcedimento"]/tbody/tr[21]/td[4]/input'))).send_keys('3')
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID,'btn-validar-procedimento'))).click()
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID,'btn-confirmar-solicitacao'))).click()
+    nGuia = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@class="box-padrao-int"/div[2]/div[1]/span[2]'))).text
+    senha = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@class="box-padrao-int"/div[2]/div[2]/span[2]'))).text
+    resultado = [nGuia,senha,'3007204','29082024']
+    
     time.sleep(3000)
 
 
