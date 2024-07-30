@@ -52,16 +52,6 @@ referenciado = "100000018677"
 usuario = "MASTER"
 senha = "lab@5886"
 
-""" try:
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@id="aviso-manutencao"]/p[1]'))).click()
-except:
-    pass """
-
-""" try:
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@id="sas-box-lgpd-info"]/div/div[2]/button'))).click()
-except:
-    pass """
-
 WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME,'sas-box-lgpd-info-accept-btn'))).click()
 
 try:
@@ -90,11 +80,8 @@ time.sleep(3)
 element = driver.find_element(By.XPATH,'//*[@id="nameCookie"]')
 driver.execute_script('arguments[0].scrollIntoView(true);', element)
 
+driver.get("https://saude.sulamericaseguros.com.br/prestador/servicos-medicos/contas-medicas/faturamento-tiss-3/faturamento/guia-de-sp-sadt/")
 
-menu = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@id="LumNav"]/li[2]/a')))
-action.move_to_element(menu).perform()
-WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@id="LumNav"]/li[2]/ul/li[2]/a'))).click()
-WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//a[text()="Guia de SP/SADT"]'))).click()
 
 
 print('Tamanho da lista: ', len(df.index))
