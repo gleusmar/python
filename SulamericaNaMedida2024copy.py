@@ -82,6 +82,8 @@ driver.execute_script('arguments[0].scrollIntoView(true);', element)
 print('Tamanho da lista: ', len(df.index))
 counter = 1
 for counter in range(len(df.index)):
+    if len(str(df.iloc[counter,11])) > 0:
+        continue
     driver.get("https://saude.sulamericaseguros.com.br/prestador/servicos-medicos/contas-medicas/faturamento-tiss-3/faturamento/guia-de-sp-sadt/")
     carteirinha = df.iloc[counter,2]
     req = str(df.iloc[counter,3])
@@ -97,9 +99,7 @@ for counter in range(len(df.index)):
         idx = ds[ds['CODIGO'] == int(x)].index[0]
         z  = ds.iloc[idx,7]
         precos.append(z)
-    print(carteirinha)
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID,'codigo-beneficiario-1'))).send_keys(carteirinha)
-    print(carteirinha)
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//button[contains(@class, "sas-form-submit")]'))).click()
 
     #WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.NAME,'guia-sadt.profissional-solicitante.tipo-documento-operadora.codigo'))).send_keys('CNPJ')
@@ -142,20 +142,19 @@ for counter in range(len(df.index)):
     element = driver.find_element(By.XPATH,'//*[@id="tabelaPer"]/tbody/tr[15]')
     driver.execute_script('arguments[0].scrollIntoView(true);', element)
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID,'confirmar-inclusao-sadt'))).click()
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID,'btnDialogVoltarEditar'))).click()
-
-    time.sleep(3000)
+    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.ID,'btnDialogVoltarEditar'))).click()
 
     driver.get("https://saude.sulamericaseguros.com.br/prestador/segurado/validacao-de-procedimentos-tiss-3/validacao-de-procedimentos/consulta/")
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID,'codigo-beneficiario-1'))).send_keys(carteirinha)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@id="tab-lista-consulta"]/tbody/td[1]'))).click()
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID,'btn-pesquisar-solicitacao'))).click()
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@id="tab-lista-consulta"]/tbody/tr/td[1]'))).click()
     nGuia = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME,'bt'))).text
-    nGuiaPrestadora = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@class="box-padrao-int"]/div[3]/div[2]/div[1]/span'))).text
-    senhaAutorizacao = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@class="box-padrao-int"]/div[3]/div[3]/div[1]/span'))).text
-    dtAutorizacao = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@class="box-padrao-int"]/div[3]/div[3]/div[2]/span'))).text
-    dtValidade = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@class="box-padrao-int"]/div[3]/div[3]/div[3]/span'))).text
-    resultado = nGuiaPrestadora,[nGuia,senhaAutorizacao,dtAutorizacao.replace('/',''),dtValidade.replace('/','')]
-    worksheet.update(f"L{counter+1}:P{counter+1}",resultado)
+    nGuiaPrestadora = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@name="ancora"]/div[1]/div[4]/div[2]/div[1]/span'))).text
+    senhaAutorizacao = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@name="ancora"]/div[1]/div[4]/div[3]/div[1]/span'))).text
+    dtAutorizacao = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@name="ancora"]/div[1]/div[4]/div[3]/div[2]/span'))).text
+    dtValidade = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@name="ancora"]/div[1]/div[4]/div[3]/div[3]/span'))).text
+    resultado = [nGuiaPrestadora,nGuia,senhaAutorizacao,dtAutorizacao.replace('/',''),dtValidade.replace('/','')]
+    worksheet.update(f"L{counter+2}:P{counter+2}",[resultado])
 
     driver.get("https://saude.sulamericaseguros.com.br/prestador/servicos-medicos/contas-medicas/faturamento-tiss-3/faturamento/validar-procedimento-autorizado/")
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID,'tipo-pesquisa-codigo-beneficiario'))).click()
@@ -187,7 +186,7 @@ for counter in range(len(df.index)):
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID,'confirmar-inclusao-sadt'))).click()
 
     msgfinal = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@class="msg-erro"]/b'))).text
-    worksheet.update_cell(counter+1,17,msgfinal)
+    worksheet.update_cell(counter+2,17,msgfinal)
     
     print('Ficha ',carteirinha,' cadastrada!')
 
