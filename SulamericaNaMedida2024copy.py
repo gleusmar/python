@@ -130,7 +130,6 @@ for counter in range(len(df.index)):
         WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.NAME,'per.codigo-procedimento'))).send_keys(proc)
         WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//a[contains(@class,"btn-busca-procedimento")]'))).click()
         if proc == '40303110':
-            print(proc)
             WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.NAME,'per.quantidade'))).send_keys('3')
         else:
             WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.NAME,'per.quantidade'))).send_keys('1')
@@ -142,7 +141,14 @@ for counter in range(len(df.index)):
     element = driver.find_element(By.XPATH,'//*[@id="tabelaPer"]/tbody/tr[15]')
     driver.execute_script('arguments[0].scrollIntoView(true);', element)
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID,'confirmar-inclusao-sadt'))).click()
+    time.sleep(1)
+    try:
+        erro = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.CLASS_NAME,'msg-erro'))).text
+        worksheet.update_cell(counter+2,18,erro)
+    except:
+        pass
     WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.ID,'btnDialogVoltarEditar'))).click()
+    time.sleep(1)
 
     driver.get("https://saude.sulamericaseguros.com.br/prestador/segurado/validacao-de-procedimentos-tiss-3/validacao-de-procedimentos/consulta/")
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID,'codigo-beneficiario-1'))).send_keys(carteirinha)
@@ -150,6 +156,7 @@ for counter in range(len(df.index)):
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@id="tab-lista-consulta"]/tbody/tr/td[1]'))).click()
     nGuia = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME,'bt'))).text
     nGuiaPrestadora = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@name="ancora"]/div[1]/div[4]/div[2]/div[1]/span'))).text
+    print(carteirinha,' - Guia ',nGuiaPrestadora,', cadastrada!')
     senhaAutorizacao = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@name="ancora"]/div[1]/div[4]/div[3]/div[1]/span'))).text
     dtAutorizacao = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@name="ancora"]/div[1]/div[4]/div[3]/div[2]/span'))).text
     dtValidade = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@name="ancora"]/div[1]/div[4]/div[3]/div[3]/span'))).text
@@ -187,8 +194,7 @@ for counter in range(len(df.index)):
 
     msgfinal = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,'//*[@class="msg-erro"]/b'))).text
     worksheet.update_cell(counter+2,17,msgfinal)
-    
-    print('Ficha ',carteirinha,' cadastrada!')
+    print(carteirinha,' - VPP ',msgfinal,' cadastrada!')
 
 
 driver.execute_script("alert('ROTINA FINALIZADA');")
