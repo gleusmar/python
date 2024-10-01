@@ -22,7 +22,16 @@ from sheetsApi import getAutorizacoes
 from sheetsApi import atualizaCelula
 from sheetsApi import atualizaCelulas
 
-#registraAutenticacao(3,6,"BRASIL!!")
+log = []
+driver = webdriver.Chrome()
+driver.maximize_window()
+action = ActionChains(driver)
+driver.get("http://c2896prd.cloudmv.com.br/sigss/")
+tempo = WebDriverWait(driver, 5)
+usuario = "04957832188"
+senha = "XLGPG@x@UQ9JTQv"
+
+
 class AnyEc:
     def __init__(self, *args):
         self.ecs = args
@@ -34,7 +43,14 @@ class AnyEc:
                     return True
             except:
                 pass
-            
+def logaAcessa():
+  tempo.until(EC.element_to_be_clickable((By.ID,'username'))).send_keys(usuario)
+  tempo.until(EC.element_to_be_clickable((By.ID,'password'))).send_keys(senha)
+  tempo.until(EC.element_to_be_clickable((By.NAME,'submit'))).click()
+  tempo.until(EC.element_to_be_clickable((By.XPATH,'//button/span[text()="Atendimento"]'))).click()
+  tempo.until(EC.element_to_be_clickable((By.XPATH,'//button/span[text()="Faturamento"]'))).click()
+  tempo.until(EC.element_to_be_clickable((By.XPATH,'//a/span[text()="Autenticação"]'))).click()
+  print("logado")            
 def lancarBiomedico():
   i = 1
   while i <= 6:
@@ -96,139 +112,116 @@ def esperaGridEsconder():
   WebDriverWait(driver, 30).until(lambda d: 'display: block' not in el.get_attribute('style'))
 
 df = pd.DataFrame(getAutorizacoes())
+sucesso = 0
+problemas = 0
+jaAutenticadas = 0
+pulei = 0
+print("Lista tem " + str(len(df.index)) + " guias")
+logaAcessa()
 
-try:
-  log = []
-  driver = webdriver.Chrome()
-  driver.maximize_window()
-  action = ActionChains(driver)
-  driver.get("http://c2896prd.cloudmv.com.br/sigss/")
-  ### driver.get("http://c2896prd.cloudmv.com.br/mvsso/login?service=http%3A%2F%2Fc2896prd.cloudmv.com.br%2Fsigss%2Fauthentication%2Fcallback%3Fclient_name%3DCasClient")
-  time.sleep(1)
-  t5 = WebDriverWait(driver, 5)
-
-  usuario = "04957832188"
-  #senha = "36615886"
-  senha = "XLGPG@x@UQ9JTQv"
-
-  t5.until(EC.element_to_be_clickable((By.ID,'username'))).send_keys(usuario)
-  t5.until(EC.element_to_be_clickable((By.ID,'password'))).send_keys(senha)
-  time.sleep(2)
-  t5.until(EC.element_to_be_clickable((By.NAME,'submit'))).click()
-  t5.until(EC.element_to_be_clickable((By.XPATH,'//button/span[text()="Atendimento"]'))).click()
-  t5.until(EC.element_to_be_clickable((By.XPATH,'//button/span[text()="Faturamento"]'))).click()
-  t5.until(EC.element_to_be_clickable((By.XPATH,'//a/span[text()="Autenticação"]'))).click()
-
-  sucesso = 0
-  problemas = 0
-  jaAutenticadas = 0
-  pulei = 0
-  print("Lista tem " + str(len(df.index)) + " guias")
-  for counter in range(len(df.index)):
-    cod = df.iloc[counter,0]
-    result = df.iloc[counter,1]
-    if result == "Guia autenticada com sucesso!" or result == "Guia já autenticada!" or "Erro" in str(result) or "O agendamento de exame da guia" in str(result): 
-      pulei += 1
-      continue
-    for i in range(2):
-      k = i + 2
-      time.sleep(1)
-      WebDriverWait(driver, 12).until(EC.element_to_be_clickable((By.ID,'competencia_chzn'))).click()
-      time.sleep(0.5)
-      t5.until(EC.element_to_be_clickable((By.ID,f'competencia_chzn_o_{k}'))).click()
-      time.sleep(0.5)
-      t5.until(EC.element_to_be_clickable((By.ID,'codBar'))).clear()
-      t5.until(EC.element_to_be_clickable((By.ID,'codBar'))).send_keys(cod)
-      time.sleep(0.5)
-      t5.until(EC.element_to_be_clickable((By.ID,'codBar'))).send_keys(Keys.ENTER)
-      time.sleep(1)
-
-      WebDriverWait(driver, 10).until( AnyEc(
-      EC.element_to_be_clickable(
-          (By.XPATH,'//button/span[contains(.,"OK")]')),
-      EC.element_to_be_clickable(
-          (By.XPATH,'//button/span[contains(.,"Gravar")]')) ))
-      try:
-        classMsgSistema = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Mensagem do sistema')]]").get_attribute('class')
-        msgSistema = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Mensagem do sistema')]]").get_attribute('innerText')
-        if "display-block" in classMsgSistema and "já foi autenticado" in msgSistema:
-          jaAutenticadas += 1
-          print(cod + " - Guia já autenticada!")
-          atualizaCelula(counter+2,2,"Guia já autenticada!")
-          t5.until(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(., "OK")]'))).click()
-          break
-        if "display-block" in classMsgSistema and "fora da faixa" in msgSistema:
-          t5.until(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(., "OK")]'))).click()
-          continue
-        if "display-block" in classMsgSistema and ("O agendamento" in msgSistema or "O Agendamento" in msgSistema):
-          problemas += 1
-          print(cod + " - O agendamento de exame da guia não foi localizado!")
-          atualizaCelula(counter+2,2,"O agendamento de exame da guia não foi localizado! O registro teve seu(s) item(ns) de agendamento excluído(s)!")
-          t5.until(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(., "OK")]'))).click()
-          break
-      except: pass
-      
-      el = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, "load_grid_info")))
-      WebDriverWait(driver, 30).until(lambda d: 'display: block' not in el.get_attribute('style'))
-
-      styleGrid = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Informações Obrigatórias')]]").get_attribute('style')
-      if "display: block" in styleGrid:
+for counter in range(len(df.index)):
+  print(counter)
+  cod = df.iloc[counter,0]
+  result = df.iloc[counter,4]
+  if result == "Guia autenticada com sucesso!" or result == "Guia já autenticada!" or "Erro" in str(result) or "O agendamento de exame da guia" in str(result): 
+    pulei += 1
+    continue
+  h = 1
+  while h <= 4:
+    try:
+      for i in range(2):
+        k = i + 2
+        time.sleep(1)
+        WebDriverWait(driver, 12).until(EC.element_to_be_clickable((By.ID,'competencia_chzn'))).click()
+        tempo.until(EC.element_to_be_clickable((By.ID,f'competencia_chzn_o_{k}'))).click()
+        tempo.until(EC.element_to_be_clickable((By.ID,'codBar'))).clear()
+        tempo.until(EC.element_to_be_clickable((By.ID,'codBar'))).send_keys(cod)
+        tempo.until(EC.element_to_be_clickable((By.ID,'codBar'))).send_keys(Keys.ENTER)
+        WebDriverWait(driver, 10).until( AnyEc(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(.,"OK")]')),EC.element_to_be_clickable((By.XPATH,'//button/span[contains(.,"Gravar")]')) ))
         try:
-          rows = driver.find_elements(By.XPATH,"//table[@id='grid_info']/tbody/tr")
-          if not rows[1].find_element(By.XPATH,"//td[7]/select").get_attribute("disabled"):
-            lancarBiomedico()
-          confere, listaExames = confereCbos()
-          atualizaCelula(counter+2,12,listaExames)
-          if confere:
-            driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
+          classMsgSistema = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Mensagem do sistema')]]").get_attribute('class')
+          msgSistema = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Mensagem do sistema')]]").get_attribute('innerText')
+          if "display-block" in classMsgSistema and "já foi autenticado" in msgSistema:
+            jaAutenticadas += 1
+            print(cod + " - Guia já autenticada!")
+            atualizaCelula(counter+2,5,"Guia já autenticada!")
+            tempo.until(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(., "OK")]'))).click()
+            break
+          if "display-block" in classMsgSistema and "fora da faixa" in msgSistema:
+            tempo.until(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(., "OK")]'))).click()
+            continue
+          if "display-block" in classMsgSistema and ("O agendamento" in msgSistema or "O Agendamento" in msgSistema):
             problemas += 1
-            print(cod +" - "+ confere)
-            atualizaCelula(counter+2,2,"Erros no(s) exame(s): " + confere)
-            break      
-          time.sleep(1.3)
-          driver.find_element(By.XPATH, "//button/span[contains(.,'Gravar')]").click()
+            print(cod + " - O agendamento de exame da guia não foi localizado!")
+            atualizaCelula(counter+2,5,"O agendamento de exame da guia não foi localizado! O registro teve seu(s) item(ns) de agendamento excluído(s)!")
+            tempo.until(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(., "OK")]'))).click()
+            break
+        except: pass
+        
+        el = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, "load_grid_info")))
+        WebDriverWait(driver, 30).until(lambda d: 'display: block' not in el.get_attribute('style'))
 
+        styleGrid = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Informações Obrigatórias')]]").get_attribute('style')
+        if "display: block" in styleGrid:
           try:
-            classMsgSistema = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Mensagem do sistema')]]").get_attribute('class')
-            msgSistema = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Mensagem do sistema')]]").get_attribute('innerText')
-            if "display-block" in classMsgSistema and "CBO não informado!" in msgSistema:
-              t5.until(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(., "OK")]'))).click()
+            rows = driver.find_elements(By.XPATH,"//table[@id='grid_info']/tbody/tr")
+            if not rows[1].find_element(By.XPATH,"//td[7]/select").get_attribute("disabled"):
+              lancarBiomedico()
+            confere, listaExames = confereCbos()
+            atualizaCelula(counter+2,12,listaExames)
+            if confere:
+              driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
               problemas += 1
-              print(cod + " - Não foi possível autenticar a guia!1")
-              atualizaCelula(counter+2,2,"Não foi possível autenticar a guia!")
+              print(cod +" - "+ confere)
+              atualizaCelula(counter+2,5,"Erros no(s) exame(s): " + confere)
+              break      
+            time.sleep(1.3)
+            driver.find_element(By.XPATH, "//button/span[contains(.,'Gravar')]").click()
+
+            try:
+              classMsgSistema = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Mensagem do sistema')]]").get_attribute('class')
+              msgSistema = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Mensagem do sistema')]]").get_attribute('innerText')
+              if "display-block" in classMsgSistema and "CBO não informado!" in msgSistema:
+                tempo.until(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(., "OK")]'))).click()
+                problemas += 1
+                print(cod + " - Não foi possível autenticar a guia!1")
+                atualizaCelula(counter+2,5,"Não foi possível autenticar a guia!")
+                driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
+                time.sleep(0.5)
+                break
+            except: pass
+            try:
+              esperaGridEsconder()
+              sucesso += 1
+              print(cod + " - Guia autenticada com sucesso!")
+              atualizaCelulas(counter+2,ultimaLinhaAutenticados())
+              time.sleep(0.5)
+              break
+            except:
+              problemas += 1
+              print(cod + " - Não foi possível autenticar a guia!2")
+              atualizaCelula(counter+2,5,"Não foi possível autenticar a guia!")
               driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
               time.sleep(0.5)
               break
-          except: pass
-          try:
-            esperaGridEsconder()
-            sucesso += 1
-            print(cod + " - Guia autenticada com sucesso!")
-            atualizaCelulas(counter+2,ultimaLinhaAutenticados())
-            time.sleep(0.5)
-            break
-          except:
+          except :
             problemas += 1
-            print(cod + " - Não foi possível autenticar a guia!2")
-            atualizaCelula(counter+2,2,"Não foi possível autenticar a guia!")
+            time.sleep(1)
+            print(cod + " - Não foi possível autenticar a guia!3")
+            atualizaCelula(counter+2,5,"Não foi possível autenticar a guia!")
             driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
-            time.sleep(0.5)
+            el = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.XPATH, "//div[./div/span[contains(text(),'Informações Obrigatórias')]]")))
+            WebDriverWait(driver, 10).until(lambda d: 'display: block' not in el.get_attribute('style'))
             break
-        except :
-          problemas += 1
-          time.sleep(1)
-          print(cod + " - Não foi possível autenticar a guia!3")
-          atualizaCelula(counter+2,2,"Não foi possível autenticar a guia!")
-          driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
-          el = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.XPATH, "//div[./div/span[contains(text(),'Informações Obrigatórias')]]")))
-          WebDriverWait(driver, 10).until(lambda d: 'display: block' not in el.get_attribute('style'))
-          break
-      esperaGridEsconder()
-            
-  print(str(counter+1) + " autorizações trabalhadas!")
-  print(str(sucesso) + " autorizações autenticadas com sucesso!")
-  print(str(problemas) + " autorizações com erros!")
-  print(str(jaAutenticadas) + " autorizações novas que tentei autenticar, mas já estavam autenticadas!")
-  print(str(pulei) + " autorizações estavam na lista mas foram passadas em outra rotina anterior")
-except RuntimeError as error:
-  print(error)
+        esperaGridEsconder()
+      break
+    except:
+      driver.refresh()
+      h += 1
+      print("Falha " + str(h))
+          
+print(str(counter+1) + " autorizações trabalhadas!")
+print(str(sucesso) + " autorizações autenticadas com sucesso!")
+print(str(problemas) + " autorizações com erros!")
+print(str(jaAutenticadas) + " autorizações novas que tentei autenticar, mas já estavam autenticadas!")
+print(str(pulei) + " autorizações estavam na lista mas foram passadas em outra rotina anterior")

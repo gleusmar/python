@@ -95,6 +95,7 @@ for counter in range(len(df.index)):
     cbos = str(df.iloc[counter,10])
     procedimentos = df.iloc[counter,5].split(';')
     precos = []
+    print('Aqui')
     for x in procedimentos:
         idx = ds[ds['CODIGO'] == int(x)].index[0]
         z  = ds.iloc[idx,7]
