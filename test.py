@@ -120,17 +120,17 @@ print("Lista tem " + str(len(df.index)) + " guias")
 logaAcessa()
 
 for counter in range(len(df.index)):
-  print(counter)
   cod = df.iloc[counter,0]
   result = df.iloc[counter,4]
   if result == "Guia autenticada com sucesso!" or result == "Guia já autenticada!" or "Erro" in str(result) or "O agendamento de exame da guia" in str(result): 
     pulei += 1
     continue
+  print(counter)
   h = 1
   while h <= 4:
     try:
       for i in range(2):
-        k = i + 2
+        k = i + 1
         time.sleep(1)
         WebDriverWait(driver, 12).until(EC.element_to_be_clickable((By.ID,'competencia_chzn'))).click()
         tempo.until(EC.element_to_be_clickable((By.ID,f'competencia_chzn_o_{k}'))).click()
@@ -168,7 +168,7 @@ for counter in range(len(df.index)):
             if not rows[1].find_element(By.XPATH,"//td[7]/select").get_attribute("disabled"):
               lancarBiomedico()
             confere, listaExames = confereCbos()
-            atualizaCelula(counter+2,12,listaExames)
+            atualizaCelula(counter+2,15,listaExames)
             if confere:
               driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
               problemas += 1
