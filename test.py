@@ -26,7 +26,7 @@ log = []
 driver = webdriver.Chrome()
 driver.maximize_window()
 action = ActionChains(driver)
-driver.get("http://c2896prd.cloudmv.com.br/sigss/")
+driver.get("http://2896prd.cloudmv.com.br/sigss")
 tempo = WebDriverWait(driver, 5)
 usuario = "04957832188"
 senha = "XLGPG@x@UQ9JTQv"
