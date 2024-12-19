@@ -26,7 +26,7 @@ log = []
 driver = webdriver.Chrome()
 driver.maximize_window()
 action = ActionChains(driver)
-driver.get("http://c2896prd.cloudmv.com.br/sigss/")
+driver.get("http://2896prd.cloudmv.com.br/sigss")
 tempo = WebDriverWait(driver, 5)
 usuario = "04957832188"
 senha = "XLGPG@x@UQ9JTQv"
@@ -130,7 +130,7 @@ for counter in range(len(df.index)):
   while h <= 4:
     try:
       for i in range(2):
-        k = i + 1
+        k = i + 2
         time.sleep(1)
         WebDriverWait(driver, 12).until(EC.element_to_be_clickable((By.ID,'competencia_chzn'))).click()
         tempo.until(EC.element_to_be_clickable((By.ID,f'competencia_chzn_o_{k}'))).click()
@@ -150,10 +150,10 @@ for counter in range(len(df.index)):
           if "display-block" in classMsgSistema and "fora da faixa" in msgSistema:
             tempo.until(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(., "OK")]'))).click()
             continue
-          if "display-block" in classMsgSistema and ("O agendamento" in msgSistema or "O Agendamento" in msgSistema):
+          if "display-block" in classMsgSistema and ("O agendamento" in msgSistema or "O Agendamento" in msgSistema or "Cliente" in msgSistema):
             problemas += 1
-            print(cod + " - O agendamento de exame da guia não foi localizado!")
-            atualizaCelula(counter+2,5,"O agendamento de exame da guia não foi localizado! O registro teve seu(s) item(ns) de agendamento excluído(s)!")
+            print(cod + " - " + msgSistema)
+            atualizaCelula(counter+2,5,msgSistema)
             tempo.until(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(., "OK")]'))).click()
             break
         except: pass
