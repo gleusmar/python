@@ -22,7 +22,7 @@ creds = Credentials.from_authorized_user_file("token.json", SCOPES)
 #    service = build("sheets", "v4", credentials=creds)
 #except: pass
 
-SHEET_ID = "1BZrcaBDi2bbz58iF5DUxlth_z4cZfQkQKHgVshhMO7o"
+SHEET_ID = "1LRkvR3BPMpEfPw0v_r3Pv74pdkWjq20FViijFfIwZzc"
 SHEET_NAME = "Página1"
 gc = gspread.service_account('credentials3.json')
 spreadsheet = gc.open_by_key(SHEET_ID)
