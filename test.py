@@ -93,6 +93,8 @@ def confereCbos():
     examesTodos.extend([exames[i+1].text, profissionais[i].text, cbos[i].text])
     if "GLAUCENI" not in str(profissionais[i].text) or cbos[i].text == "Selecione uma opção"  or cbos[i].text == "...":
       examesProblema.append(exames[i+1].text)
+  if (examesProblema):
+    examesProblema.insert(0, "Guia autorizada para: " + profissionais[0].text)
   s = ' e '.join(examesProblema)
   t = ';'.join(examesTodos)
   return s, t
@@ -122,7 +124,7 @@ logaAcessa()
 for counter in range(len(df.index)):
   cod = df.iloc[counter,0]
   result = df.iloc[counter,4]
-  if result == "Guia autenticada com sucesso!" or result == "Guia já autenticada!" or "Erro" in str(result) or "gendamento" in str(result) or "guia!" in str(result) or "Não autenticada!" in str(result) or "guia informada!" in str(result): 
+  if result == "Guia autenticada com sucesso!" or result == "Guia já autenticada!" or "Erro" in str(result) or "O agendamento de exame da guia" in str(result): 
     pulei += 1
     continue
   print(counter)
@@ -150,7 +152,7 @@ for counter in range(len(df.index)):
           if "display-block" in classMsgSistema and "fora da faixa" in msgSistema:
             tempo.until(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(., "OK")]'))).click()
             continue
-          if "display-block" in classMsgSistema and ("gendamento" in msgSistema or "Cliente" in msgSistema or "inválido" in msgSistema):
+          if "display-block" in classMsgSistema and ("O agendamento" in msgSistema or "O Agendamento" in msgSistema or "Cliente" in msgSistema):
             problemas += 1
             print(cod + " - " + msgSistema)
             atualizaCelula(counter+2,5,msgSistema)
