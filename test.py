@@ -124,7 +124,16 @@ logaAcessa()
 for counter in range(len(df.index)):
   cod = df.iloc[counter,0]
   result = df.iloc[counter,4]
-  if result == "Guia autenticada com sucesso!" or result == "Guia já autenticada!" or "Erro" in str(result) or "O agendamento de exame da guia" in str(result): 
+  skip_keys = ["Guia autenticada com sucesso!",
+               "Guia já autenticada!",
+               "Erro",
+               "O agendamento de exame da guia",
+               "Cliente",
+               "não é válida",
+               "ão autenticada",
+               "excluído",
+               "á autenticada"]
+  if any(key in str(result) for key in skip_keys):
     pulei += 1
     continue
   print(counter)
@@ -152,7 +161,7 @@ for counter in range(len(df.index)):
           if "display-block" in classMsgSistema and "fora da faixa" in msgSistema:
             tempo.until(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(., "OK")]'))).click()
             continue
-          if "display-block" in classMsgSistema and ("O agendamento" in msgSistema or "O Agendamento" in msgSistema or "Cliente" in msgSistema or "não é válida" in msgSistema):
+          if "display-block" in classMsgSistema and ("O agendamento" in msgSistema or "O Agendamento" in msgSistema):
             problemas += 1
             print(cod + " - " + msgSistema)
             atualizaCelula(counter+2,5,msgSistema)
