@@ -152,7 +152,7 @@ for counter in range(len(df.index)):
           if "display-block" in classMsgSistema and "fora da faixa" in msgSistema:
             tempo.until(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(., "OK")]'))).click()
             continue
-          if "display-block" in classMsgSistema and ("O agendamento" in msgSistema or "O Agendamento" in msgSistema or "Cliente" in msgSistema):
+          if "display-block" in classMsgSistema and ("O agendamento" in msgSistema or "O Agendamento" in msgSistema or "Cliente" in msgSistema or "não é válida" in msgSistema):
             problemas += 1
             print(cod + " - " + msgSistema)
             atualizaCelula(counter+2,5,msgSistema)
