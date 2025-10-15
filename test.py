@@ -17,6 +17,8 @@ import pandas as pd
 import numpy as np
 from openpyxl import load_workbook
 import time
+from datetime import datetime
+import re
 from io import StringIO
 from sheetsApi import getAutorizacoes
 from sheetsApi import atualizaCelula
@@ -55,32 +57,105 @@ def lancarBiomedico():
   i = 1
   while i <= 6:
     try:
+      # Primeiro, tenta com os XPaths absolutos informados pelo usuário
+      prof_click_abs = "/html/body/div[9]/div[2]/form/div/div/div[3]/div[3]/div/table/tbody/tr[2]/td[7]/div"
+      prof_input_abs = "/html/body/div[9]/div[2]/form/div/div/div[3]/div[3]/div/table/tbody/tr[2]/td[7]/div/div/div/input[1]"
+      prof_option_abs = "/html/body/div[9]/div[2]/form/div/div/div[3]/div[3]/div/table/tbody/tr[2]/td[7]/div/div/ul/table/tbody/tr[2]/td[2]/div"
+
+      WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, prof_click_abs))
+      ).click()
+
+      try:
+        prof_input = WebDriverWait(driver, 10).until(
+          EC.element_to_be_clickable((By.XPATH, prof_input_abs))
+        )
+      except Exception:
+        prof_input = WebDriverWait(driver, 10).until(
+          EC.visibility_of_element_located((By.XPATH, prof_input_abs))
+        )
+
+      prof_input.click()
+      # limpar de maneira robusta
+      try:
+        prof_input.clear()
+      except Exception:
+        prof_input.send_keys(Keys.CONTROL, 'a')
+        prof_input.send_keys(Keys.DELETE)
+      try:
+        prof_input.send_keys("glauceni")
+      except Exception:
+        # fallback para o elemento ativo, caso o input real esteja focado
+        driver.switch_to.active_element.send_keys("glauceni")
+      prof_input.send_keys(Keys.ENTER)
+
+      WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, prof_option_abs))
+      ).click()
+
+      # CBO (td[9]) pelos XPaths absolutos correspondentes
+      cbo_click_abs = "/html/body/div[9]/div[2]/form/div/div/div[3]/div[3]/div/table/tbody/tr[2]/td[9]/div"
+      cbo_input_abs = "/html/body/div[9]/div[2]/form/div/div/div[3]/div[3]/div/table/tbody/tr[2]/td[9]/div/div/div/input[1]"
+
+      WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, cbo_click_abs))
+      ).click()
+
+      try:
+        cbo_input = WebDriverWait(driver, 10).until(
+          EC.element_to_be_clickable((By.XPATH, cbo_input_abs))
+        )
+      except Exception:
+        cbo_input = WebDriverWait(driver, 10).until(
+          EC.visibility_of_element_located((By.XPATH, cbo_input_abs))
+        )
+
+      cbo_input.click()
+      try:
+        cbo_input.clear()
+      except Exception:
+        cbo_input.send_keys(Keys.CONTROL, 'a')
+        cbo_input.send_keys(Keys.DELETE)
+      try:
+        cbo_input.send_keys("221205")
+      except Exception:
+        driver.switch_to.active_element.send_keys("221205")
+      cbo_input.send_keys(Keys.ENTER)
+      
       time.sleep(0.2)
-      rows[1].find_element(By.XPATH,"//td[7]/div/a").click()
-      time.sleep(0.2)
-      rows[1].find_element(By.XPATH,"//td[7]/div/div/div/input").click()
-      time.sleep(0.2)
-      rows[1].find_element(By.XPATH,"//td[7]/div/div/div/input").clear()
-      time.sleep(0.2)
-      rows[1].find_element(By.XPATH,"//td[7]/div/div/div/input").send_keys("glauceni")
-      time.sleep(0.2)
-      rows[1].find_element(By.XPATH,"//td[7]/div/div/div/input").send_keys(Keys.ENTER)
-      time.sleep(0.2)
-      rows[1].find_element(By.XPATH,"//td[7]/div/div/ul/table/tbody/tr[2]/td[2]/div").click()
-      time.sleep(0.2)
-      rows[1].find_element(By.XPATH,"//td[9]/div/a").click()
-      time.sleep(0.2)
-      rows[1].find_element(By.XPATH,"//td[9]/div/div/div/input").click()
-      time.sleep(0.1)
-      rows[1].find_element(By.XPATH,"//td[9]/div/div/div/input").clear()
-      time.sleep(0.1)
-      rows[1].find_element(By.XPATH,"//td[9]/div/div/div/input").send_keys("221205")
-      time.sleep(0.3)
-      rows[1].find_element(By.XPATH,"//td[9]/div/div/div/input").send_keys(Keys.ENTER)
-      time.sleep(0.3)
       break
-    except:
+    except Exception:
+      # Fallback: âncora no container visível "Informações Obrigatórias"
+      try:
+        container_xpath = "//div[./div/span[contains(text(),'Informações Obrigatórias')]]"
+        prof_click_xpath = container_xpath + "//table/tbody/tr[2]/td[7]/div"
+        prof_input_xpath = container_xpath + "//table/tbody/tr[2]/td[7]/div/div/div/input[1]"
+        prof_option_xpath = container_xpath + "//table/tbody/tr[2]/td[7]/div/div/ul/table/tbody/tr[2]/td[2]/div"
+
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, prof_click_xpath))).click()
+        prof_input = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, prof_input_xpath)))
+        prof_input.click()
+        prof_input.send_keys(Keys.CONTROL, 'a')
+        prof_input.send_keys(Keys.DELETE)
+        prof_input.send_keys("glauceni")
+        prof_input.send_keys(Keys.ENTER)
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, prof_option_xpath))).click()
+
+        cbo_click_xpath = container_xpath + "//table/tbody/tr[2]/td[9]/div"
+        cbo_input_xpath = container_xpath + "//table/tbody/tr[2]/td[9]/div/div/div/input[1]"
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, cbo_click_xpath))).click()
+        cbo_input = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, cbo_input_xpath)))
+        cbo_input.click()
+        cbo_input.send_keys(Keys.CONTROL, 'a')
+        cbo_input.send_keys(Keys.DELETE)
+        cbo_input.send_keys("221205")
+        cbo_input.send_keys(Keys.ENTER)
+        time.sleep(0.2)
+        break
+      except Exception:
+        pass
       i += 1
+      time.sleep(0.2)
       print(cod + " - Tentativa " + str(i))
 
 def confereCbos():
@@ -113,6 +188,199 @@ def esperaGridEsconder():
   el = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.XPATH, "//div[./div/span[contains(text(),'Informações Obrigatórias')]]")))
   WebDriverWait(driver, 30).until(lambda d: 'display: block' not in el.get_attribute('style'))
 
+def reset_context_between_competencia():
+  # Fecha mensagem do sistema se aberta
+  try:
+    classMsgSistema = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Mensagem do sistema')]]").get_attribute('class')
+    if "display-block" in classMsgSistema:
+      tempo.until(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(., "OK")]'))).click()
+  except: pass
+  # Fecha 'Informações Obrigatórias' se aberta
+  try:
+    el = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Informações Obrigatórias')]]")
+    if 'display: block' in el.get_attribute('style'):
+      # tenta por botão com texto
+      try:
+        btn = el.find_element(By.XPATH, ".//button[.//span[normalize-space()='Cancelar' or normalize-space()='Fechar' or normalize-space()='Fechar Sem Gravar']]")
+        btn.click()
+      except Exception:
+        # fallback ao caminho antigo
+        driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
+      WebDriverWait(driver, 10).until(lambda d: 'display: block' not in el.get_attribute('style'))
+  except: pass
+  # Fecha dropdowns Chosen ativos com ESC
+  try:
+    active_chosen = driver.find_elements(By.XPATH, "//div[contains(@class,'chzn-container') and contains(@class,'chzn-container-active')]")
+    if active_chosen:
+      ActionChains(driver).send_keys(Keys.ESCAPE).perform()
+      time.sleep(0.05)
+  except: pass
+  # Fecha dropdowns/focus com ESC e clica no body
+  try:
+    ActionChains(driver).send_keys(Keys.ESCAPE).perform()
+    time.sleep(0.05)
+    ActionChains(driver).send_keys(Keys.ESCAPE).perform()
+    driver.find_element(By.TAG_NAME, 'body').click()
+  except: pass
+  # Aguarda overlay de modal sumir e, se necessário, remove via JS
+  try:
+    WebDriverWait(driver, 3).until(EC.invisibility_of_element_located((By.XPATH, "//div[contains(@class,'ui-widget-overlay') and contains(@style,'display: block')]")))
+  except Exception:
+    try:
+      driver.execute_script("document.querySelectorAll('.ui-widget-overlay').forEach(e=>e.style.display='none')")
+    except Exception:
+      pass
+  # Aguarda loader sumir se presente
+  try:
+    el = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, "load_grid_info")))
+    WebDriverWait(driver, 10).until(lambda d: 'display: block' not in el.get_attribute('style'))
+  except: pass
+
+def set_competencia_by_index(idx: int) -> bool:
+  # Primeiro tenta via Chosen (#competencia_chzn)
+  try:
+    container = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'competencia_chzn')))
+    anchor = container.find_element(By.CSS_SELECTOR, 'a.chzn-single')
+    # Abre o dropdown se não estiver aberto
+    if 'chzn-container-active' not in container.get_attribute('class'):
+      WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '#competencia_chzn a.chzn-single'))).click()
+    # Aguarda a caixa de busca do Chosen (dropdown aberto)
+    WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, 'competencia_chzn_search')))
+
+    # Seleciona a opção pelo id competencia_chzn_o_{idx}
+    opt = None
+    try:
+      opt = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, f'competencia_chzn_o_{idx}')))
+    except Exception:
+      # Fallback: pega a (idx)-ésima opção ativa ignorando o placeholder (id *_o_0)
+      try:
+        options = container.find_elements(By.CSS_SELECTOR, 'ul.chzn-results > li.active-result')
+        # garante que temos opções suficientes
+        if options and len(options) > idx:
+          opt = options[idx]
+      except Exception:
+        opt = None
+    if opt is None:
+      raise Exception('Não encontrou opção de competência pelo índice informado')
+    try:
+      driver.execute_script("arguments[0].scrollIntoView({block:'nearest'});", opt)
+    except Exception:
+      pass
+    try:
+      WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, f"//*[@id='competencia_chzn_o_{idx}']|."))).click()
+    except Exception:
+      try:
+        WebDriverWait(driver, 2).until(EC.element_to_be_clickable(opt)).click()
+      except Exception:
+        driver.execute_script("arguments[0].click();", opt)
+
+    # Verifica se o texto exibido mudou para o título/label da opção
+    try:
+      chosen_text = opt.get_attribute('title') or opt.text
+      WebDriverWait(driver, 5).until(lambda d: d.find_element(By.CSS_SELECTOR, '#competencia_chzn a.chzn-single span').text.strip() == (chosen_text or '').strip())
+    except Exception:
+      pass
+    # Garante que o dropdown fechou
+    try:
+      WebDriverWait(driver, 5).until(lambda d: 'chzn-single-with-drop' not in d.find_element(By.CSS_SELECTOR, '#competencia_chzn a.chzn-single').get_attribute('class'))
+    except Exception:
+      try:
+        ActionChains(driver).send_keys(Keys.ESCAPE).perform()
+      except Exception:
+        pass
+    return True
+  except Exception:
+    # Fallback: tenta selecionar via <select id="competencia">
+    try:
+      select_el = driver.find_element(By.ID, 'competencia')
+      Select(select_el).select_by_index(idx)
+      try:
+        driver.execute_script("arguments[0].dispatchEvent(new Event('change', {bubbles:true}))", select_el)
+      except Exception:
+        pass
+      return True
+    except Exception:
+      return False
+
+def ensure_codbar_ready():
+  el = tempo.until(EC.element_to_be_clickable((By.ID,'codBar')))
+  try:
+    driver.execute_script("arguments[0].scrollIntoView({block:'center'});", el)
+  except Exception:
+    pass
+  # Garante que nenhum dropdown/overlay está ativo
+  try:
+    ActionChains(driver).send_keys(Keys.ESCAPE).perform()
+    time.sleep(0.05)
+  except Exception:
+    pass
+  try:
+    driver.execute_script("if(document.activeElement) document.activeElement.blur();")
+  except Exception:
+    pass
+  try:
+    el.click()
+    driver.execute_script("arguments[0].focus();", el)
+  except Exception:
+    pass
+  return el
+
+def set_competencia_current() -> bool:
+  """Abre o Chosen #competencia_chzn e seleciona a opção cujo texto representa o mês/ano corrente."""
+  now = datetime.now()
+  tgt_month = now.month
+  tgt_year = now.year
+  try:
+    container = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'competencia_chzn')))
+    # abre dropdown se necessário
+    if 'chzn-container-active' not in container.get_attribute('class'):
+      WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '#competencia_chzn a.chzn-single'))).click()
+    WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, 'competencia_chzn_search')))
+    # aguarda as opções carregarem no dropdown
+    try:
+      WebDriverWait(driver, 10).until(lambda d: len(container.find_elements(By.CSS_SELECTOR, 'ul.chzn-results > li')) > 1)
+      WebDriverWait(driver, 10).until(lambda d: len(container.find_elements(By.CSS_SELECTOR, 'ul.chzn-results > li.active-result')) > 0)
+    except Exception:
+      pass
+    time.sleep(0.2)
+
+    # procura opção por texto (ex.: "10 — 2025"). Tolerante a diferentes traços.
+    options = container.find_elements(By.CSS_SELECTOR, 'ul.chzn-results > li.active-result')
+    target = None
+    for li in options:
+      txt = (li.get_attribute('title') or li.text or '').strip()
+      # normaliza travessões: -, – (U+2013), — (U+2014)
+      txt_norm = re.sub(r"[\-\u2013\u2014]", '-', txt)
+      m = re.search(r"^(\d{1,2})\s*-\s*(\d{4})$", txt_norm)
+      if not m:
+        continue
+      m_int, y_int = int(m.group(1)), int(m.group(2))
+      if m_int == tgt_month and y_int == tgt_year:
+        target = li
+        break
+    if target is None:
+      return False
+    try:
+      driver.execute_script("arguments[0].scrollIntoView({block:'nearest'});", target)
+    except Exception:
+      pass
+    try:
+      WebDriverWait(driver, 5).until(EC.element_to_be_clickable(target)).click()
+    except Exception:
+      driver.execute_script("arguments[0].click();", target)
+
+    # garante fechamento do dropdown
+    try:
+      WebDriverWait(driver, 5).until(lambda d: 'chzn-single-with-drop' not in d.find_element(By.CSS_SELECTOR, '#competencia_chzn a.chzn-single').get_attribute('class'))
+    except Exception:
+      try:
+        ActionChains(driver).send_keys(Keys.ESCAPE).perform()
+      except Exception:
+        pass
+    return True
+  except Exception:
+    return False
+
 df = pd.DataFrame(getAutorizacoes())
 sucesso = 0
 problemas = 0
@@ -141,13 +409,17 @@ for counter in range(len(df.index)):
   while h <= 4:
     try:
       for i in range(3):
-        k = i + 1
+        k = i + 2
+        # Na 2ª e 3ª tentativa, reseta o contexto para evitar bloqueio de digitação
+        if i > 0:
+          reset_context_between_competencia()
+          time.sleep(0.1)
         time.sleep(1)
-        WebDriverWait(driver, 12).until(EC.element_to_be_clickable((By.ID,'competencia_chzn'))).click()
-        tempo.until(EC.element_to_be_clickable((By.ID,f'competencia_chzn_o_{k}'))).click()
-        tempo.until(EC.element_to_be_clickable((By.ID,'codBar'))).clear()
-        tempo.until(EC.element_to_be_clickable((By.ID,'codBar'))).send_keys(cod)
-        tempo.until(EC.element_to_be_clickable((By.ID,'codBar'))).send_keys(Keys.ENTER)
+        set_competencia_current()
+        cb = ensure_codbar_ready()
+        cb.clear()
+        cb.send_keys(cod)
+        cb.send_keys(Keys.ENTER)
         WebDriverWait(driver, 10).until( AnyEc(EC.element_to_be_clickable((By.XPATH,'//button/span[contains(.,"OK")]')),EC.element_to_be_clickable((By.XPATH,'//button/span[contains(.,"Gravar")]')) ))
         try:
           classMsgSistema = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Mensagem do sistema')]]").get_attribute('class')
@@ -176,7 +448,7 @@ for counter in range(len(df.index)):
         if "display: block" in styleGrid:
           try:
             rows = driver.find_elements(By.XPATH,"//table[@id='grid_info']/tbody/tr")
-            if not rows[1].find_element(By.XPATH,"//td[7]/select").get_attribute("disabled"):
+            if not rows[1].find_element(By.XPATH,".//td[7]/select").get_attribute("disabled"):
               lancarBiomedico()
             confere, listaExames = confereCbos()
             atualizaCelula(counter+2,15,listaExames)
