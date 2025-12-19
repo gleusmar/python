@@ -461,9 +461,14 @@ sucesso = 0
 problemas = 0
 jaAutenticadas = 0
 pulei = 0
+colE = df.iloc[:,4] if df.shape[1] > 4 else pd.Series([np.nan] * len(df))
+mask_para_aut = colE.isna() | (colE.astype(str).str.strip() == '')
+total_para_aut = int(mask_para_aut.sum())
 print("Lista tem " + str(len(df.index)) + " guias")
+print("Há " + str(total_para_aut) + " guias para autenticar!")
 logaAcessa()
 
+ordem_nao_autenticadas = 0
 for counter in range(len(df.index)):
   cod = df.iloc[counter,0]
   result = df.iloc[counter,4]
@@ -479,7 +484,11 @@ for counter in range(len(df.index)):
   if any(key in str(result) for key in skip_keys):
     pulei += 1
     continue
-  print(counter)
+  if bool(mask_para_aut.iloc[counter]):
+    ordem_nao_autenticadas += 1
+    print(str(counter+2) + " " + str(ordem_nao_autenticadas) + "/" + str(total_para_aut))
+  else:
+    print(counter+2)
   h = 1
   while h <= 4:
     try:
