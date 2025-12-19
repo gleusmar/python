@@ -110,7 +110,7 @@ def logaAcessa():
     container.click()
   except Exception:
     driver.execute_script("arguments[0].click();", container)
-  print("logado")            
+  print("Logado")            
 def lancarBiomedico():
   i = 1
   while i <= 6:
@@ -230,7 +230,6 @@ def confereCbos():
     examesProblema.insert(0, "Guia autorizada para: " + profissionais[0].text)
   s = ' e '.join(examesProblema)
   t = ';'.join(examesTodos)
-  print(s)
   return s, t
 
 def ultimaLinhaAutenticados():
@@ -527,7 +526,6 @@ for counter in range(len(df.index)):
             if not rows[1].find_element(By.XPATH,".//td[7]/select").get_attribute("disabled"):
               lancarBiomedico()
             confere, listaExames = confereCbos()
-            print(confere)
             atualizaCelula(counter+2,15,listaExames)
             if confere:
               try:
