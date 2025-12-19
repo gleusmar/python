@@ -5,13 +5,11 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 #import undetected_chromedriver as uc
 import pandas as pd
 import numpy as np
@@ -25,11 +23,17 @@ from sheetsApi import atualizaCelula
 from sheetsApi import atualizaCelulas
 
 log = []
-driver = webdriver.Chrome()
+options = ChromeOptions()
+options.add_argument("--headless=new")
+options.add_argument("--disable-gpu")
+options.add_argument("--window-size=1920,1080")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
+driver = webdriver.Chrome(options=options)
 driver.maximize_window()
 action = ActionChains(driver)
 driver.get("http://2896prd.cloudmv.com.br/sigss")
-tempo = WebDriverWait(driver, 5)
+tempo = WebDriverWait(driver, 10)
 usuario = "04957832188"
 senha = "XLGPG@x@UQ9JTQv"
 
@@ -46,12 +50,66 @@ class AnyEc:
             except:
                 pass
 def logaAcessa():
-  tempo.until(EC.element_to_be_clickable((By.ID,'username'))).send_keys(usuario)
-  tempo.until(EC.element_to_be_clickable((By.ID,'password'))).send_keys(senha)
-  tempo.until(EC.element_to_be_clickable((By.NAME,'submit'))).click()
-  tempo.until(EC.element_to_be_clickable((By.XPATH,'//button/span[text()="Atendimento"]'))).click()
-  tempo.until(EC.element_to_be_clickable((By.XPATH,'//button/span[text()="Faturamento"]'))).click()
-  tempo.until(EC.element_to_be_clickable((By.XPATH,'//a/span[text()="Autenticação"]'))).click()
+  user_el = tempo.until(EC.visibility_of_element_located((By.ID,'username')))
+  pass_el = tempo.until(EC.visibility_of_element_located((By.ID,'password')))
+  try:
+    user_el.clear()
+  except Exception:
+    pass
+  user_el.send_keys(usuario)
+  try:
+    pass_el.clear()
+  except Exception:
+    pass
+  pass_el.send_keys(senha)
+  login_el = tempo.until(EC.presence_of_element_located((By.NAME,'submit')))
+  try:
+    driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", login_el)
+  except Exception:
+    pass
+  try:
+    tempo.until(EC.element_to_be_clickable((By.NAME,'submit')))
+    login_el.click()
+  except Exception:
+    try:
+      driver.execute_script("arguments[0].click();", login_el)
+    except Exception:
+      pass_el.send_keys(Keys.ENTER)
+  try:
+    WebDriverWait(driver, 15).until(lambda d: d.execute_script("return document.readyState") == "complete")
+  except Exception:
+    pass
+  try:
+    driver.switch_to.default_content()
+  except Exception:
+    pass
+  for label, ancestor in [("Atendimento","button"),("Faturamento","button")]:
+    el = WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.XPATH, f'//span[normalize-space()="{label}"]')))
+    try:
+      container = el.find_element(By.XPATH, f'ancestor::{ancestor}[1]')
+    except Exception:
+      container = el
+    try:
+      driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", container)
+    except Exception:
+      pass
+    try:
+      container.click()
+    except Exception:
+      driver.execute_script("arguments[0].click();", container)
+  el = WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.XPATH, '//span[normalize-space()="Autenticação"]')))
+  try:
+    container = el.find_element(By.XPATH, 'ancestor::a[1]')
+  except Exception:
+    container = el
+  try:
+    driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", container)
+  except Exception:
+    pass
+  try:
+    container.click()
+  except Exception:
+    driver.execute_script("arguments[0].click();", container)
   print("logado")            
 def lancarBiomedico():
   i = 1
@@ -172,6 +230,7 @@ def confereCbos():
     examesProblema.insert(0, "Guia autorizada para: " + profissionais[0].text)
   s = ' e '.join(examesProblema)
   t = ';'.join(examesTodos)
+  print(s)
   return s, t
 
 def ultimaLinhaAutenticados():
@@ -187,6 +246,20 @@ def ultimaLinhaAutenticados():
 def esperaGridEsconder():
   el = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.XPATH, "//div[./div/span[contains(text(),'Informações Obrigatórias')]]")))
   WebDriverWait(driver, 30).until(lambda d: 'display: block' not in el.get_attribute('style'))
+
+def click_dialog_button(label: str, dialog_title: str = 'Informações Obrigatórias'):
+  dialog_xpath = f"//div[contains(@class,'ui-dialog') and contains(@style,'display: block') and .//span[contains(@class,'ui-dialog-title') and normalize-space()='{dialog_title}']]"
+  btn_xpath = f"{dialog_xpath}//div[contains(@class,'ui-dialog-buttonpane')]//button[.//span[normalize-space()='{label}']]"
+  btn = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, btn_xpath)))
+  try:
+    driver.execute_script("arguments[0].scrollIntoView({block:'center'});", btn)
+  except Exception:
+    pass
+  try:
+    btn.click()
+  except Exception:
+    driver.execute_script("arguments[0].click();", btn)
+  return btn
 
 def reset_context_between_competencia():
   # Fecha mensagem do sistema se aberta
@@ -205,7 +278,10 @@ def reset_context_between_competencia():
         btn.click()
       except Exception:
         # fallback ao caminho antigo
-        driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
+        try:
+          click_dialog_button('Voltar')
+        except Exception:
+          driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
       WebDriverWait(driver, 10).until(lambda d: 'display: block' not in el.get_attribute('style'))
   except: pass
   # Fecha dropdowns Chosen ativos com ESC
@@ -451,15 +527,19 @@ for counter in range(len(df.index)):
             if not rows[1].find_element(By.XPATH,".//td[7]/select").get_attribute("disabled"):
               lancarBiomedico()
             confere, listaExames = confereCbos()
+            print(confere)
             atualizaCelula(counter+2,15,listaExames)
             if confere:
-              driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
+              try:
+                click_dialog_button('Voltar')
+              except Exception:
+                driver.find_element(By.XPATH, "//button/span[contains(.,'Voltar')]").click()
               problemas += 1
               print(cod +" - "+ confere)
               atualizaCelula(counter+2,5,"Erros no(s) exame(s): " + confere)
               break      
             time.sleep(1.3)
-            driver.find_element(By.XPATH, "//button/span[contains(.,'Gravar')]").click()
+            click_dialog_button('Gravar')
 
             try:
               classMsgSistema = driver.find_element(By.XPATH, "//div[./div/span[contains(text(),'Mensagem do sistema')]]").get_attribute('class')
@@ -469,7 +549,10 @@ for counter in range(len(df.index)):
                 problemas += 1
                 print(cod + " - Não foi possível autenticar a guia!1")
                 atualizaCelula(counter+2,5,"Não foi possível autenticar a guia!")
-                driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
+                try:
+                  click_dialog_button('Voltar')
+                except Exception:
+                  driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
                 time.sleep(0.5)
                 break
             except: pass
@@ -484,7 +567,10 @@ for counter in range(len(df.index)):
               problemas += 1
               print(cod + " - Não foi possível autenticar a guia!2")
               atualizaCelula(counter+2,5,"Não foi possível autenticar a guia!")
-              driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
+              try:
+                click_dialog_button('Voltar')
+              except Exception:
+                driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
               time.sleep(0.5)
               break
           except :
@@ -492,7 +578,10 @@ for counter in range(len(df.index)):
             time.sleep(1)
             print(cod + " - Não foi possível autenticar a guia!3")
             atualizaCelula(counter+2,5,"Não foi possível autenticar a guia!")
-            driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
+            try:
+              click_dialog_button('Voltar')
+            except Exception:
+              driver.find_element(By.XPATH, "//div[9]/div[3]/div/button[2]").click()
             el = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.XPATH, "//div[./div/span[contains(text(),'Informações Obrigatórias')]]")))
             WebDriverWait(driver, 10).until(lambda d: 'display: block' not in el.get_attribute('style'))
             break

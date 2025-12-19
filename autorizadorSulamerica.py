@@ -41,7 +41,7 @@ driver = webdriver.Chrome()
 driver.maximize_window()
 action = ActionChains(driver)
 driver.get("https://saude.sulamericaseguros.com.br/prestador/login/")
-WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME,'close-btn'))).click() 
+#WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME,'close-btn'))).click() 
 
 time.sleep(1)
 
