@@ -1,6 +1,6 @@
+import os
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import Select
@@ -10,7 +10,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import WebDriverException
-#import undetected_chromedriver as uc
 import pandas as pd
 import numpy as np
 from openpyxl import load_workbook
@@ -29,13 +28,27 @@ options.add_argument("--disable-gpu")
 options.add_argument("--window-size=1920,1080")
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
-driver = webdriver.Chrome(options=options)
+
+# Configuração para GitHub Actions (usa Chrome do sistema)
+if os.environ.get('GITHUB_ACTIONS'):
+    options.add_argument("--disable-extensions")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--no-sandbox")
+    options.binary_location = "/usr/bin/chromium-browser"
+    service = Service(executable_path="/usr/bin/chromedriver")
+    driver = webdriver.Chrome(service=service, options=options)
+else:
+    # Configuração local (usa webdriver-manager)
+    from webdriver_manager.chrome import ChromeDriverManager
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=options)
+
 driver.maximize_window()
 action = ActionChains(driver)
 driver.get("http://2896prd.cloudmv.com.br/sigss")
 tempo = WebDriverWait(driver, 10)
-usuario = "04957832188"
-senha = "XLGPG@x@UQ9JTQv"
+usuario = os.environ.get('USUARIO', '04957832188')
+senha = os.environ.get('SENHA', 'XLGPG@x@UQ9JTQv')
 
 
 class AnyEc:
@@ -480,7 +493,8 @@ for counter in range(len(df.index)):
                "não é válida",
                "ão autenticada",
                "excluído",
-               "á autenticada"]
+               "á autenticada",
+               "Não foi possível autenticar"]
   if any(key in str(result) for key in skip_keys):
     pulei += 1
     continue
