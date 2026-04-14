@@ -22,22 +22,17 @@ Vá ao seu repositório no GitHub e configure as seguintes secrets:
 
 - **USUARIO**: Seu usuário do sistema (ex: `04957832188`)
 - **SENHA**: Sua senha do sistema
-- **CREDENTIALS_JSON**: Conteúdo do arquivo `credentials.json`
-- **TOKEN_JSON**: Conteúdo do arquivo `token.json`
+- **CREDENTIALS3_JSON**: Conteúdo do arquivo `credentials3.json` (service account do Google Sheets)
 
-### Como adicionar os arquivos JSON como secrets:
+### Como adicionar o arquivo JSON como secret:
 
-Para o `credentials.json`:
+Para o `credentials3.json`:
 ```bash
-cat credentials.json
+cat credentials3.json
 # Copie todo o conteúdo e cole no campo "Value" do secret
 ```
 
-Para o `token.json`:
-```bash
-cat token.json
-# Copie todo o conteúdo e cole no campo "Value" do secret
-```
+**Importante**: O `credentials3.json` é um arquivo de service account do Google Sheets que contém as credenciais para acessar sua planilha. Certifique-se de que este arquivo tem permissão para acessar a planilha especificada no `sheetsApi.py`.
 
 ## Passo 3: Executar o Workflow
 
@@ -88,7 +83,7 @@ python test.py
 O workflow instala automaticamente o Chrome e ChromeDriver no Ubuntu.
 
 ### Erro: Credenciais inválidas
-Verifique se os secrets foram configurados corretamente e se o conteúdo dos arquivos JSON foi copiado integralmente.
+Verifique se o secret `CREDENTIALS3_JSON` foi configurado corretamente e se o conteúdo do arquivo foi copiado integralmente. Certifique-se também de que o service account tem permissão para acessar a planilha do Google Sheets.
 
 ### Timeout
 Se o script demorar mais de 6 horas, considere:

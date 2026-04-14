@@ -31,11 +31,11 @@ jobs:
       
       - name: Setup credentials
         env:
-          CREDENTIALS_JSON: ${{ secrets.CREDENTIALS_JSON }}
-          TOKEN_JSON: ${{ secrets.TOKEN_JSON }}
+          CREDENTIALS3_JSON: ${{ secrets.CREDENTIALS3_JSON }}
+          CREDENTIALS_FILE: ${{ secrets.CREDENTIALS_FILE }}
         run: |
-          echo "$CREDENTIALS_JSON" > credentials.json
-          echo "$TOKEN_JSON" > token.json
+          echo "$CREDENTIALS3_JSON" > credentials3.json
+          echo "CREDENTIALS_FILE=credentials3.json" >> $GITHUB_ENV
       
       - name: Run autenticador
         env:

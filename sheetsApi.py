@@ -24,7 +24,10 @@ creds = Credentials.from_authorized_user_file("token.json", SCOPES)
 
 SHEET_ID = "1LRkvR3BPMpEfPw0v_r3Pv74pdkWjq20FViijFfIwZzc"
 SHEET_NAME = "Página1"
-gc = gspread.service_account('credentials3.json')
+
+# Usa variável de ambiente para o arquivo de credenciais, com fallback para local
+credentials_file = os.environ.get('CREDENTIALS_FILE', 'credentials3.json')
+gc = gspread.service_account(credentials_file)
 spreadsheet = gc.open_by_key(SHEET_ID)
 worksheet = spreadsheet.worksheet(SHEET_NAME)
 
