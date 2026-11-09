@@ -1,7 +1,6 @@
 import os.path
 
 from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -17,10 +16,7 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 #SAMPLE_SPREADSHEET_ID = "1BZrcaBDi2bbz58iF5DUxlth_z4cZfQkQKHgVshhMO7o"
 #SAMPLE_RANGE_NAME = "Página1!A:H"
 
-creds = Credentials.from_authorized_user_file("token.json", SCOPES)
-#try:
-#    service = build("sheets", "v4", credentials=creds)
-#except: pass
+# Autenticação via service account (credentials3.json / CREDENTIALS_FILE)
 
 SHEET_ID = "1LRkvR3BPMpEfPw0v_r3Pv74pdkWjq20FViijFfIwZzc"
 SHEET_NAME = "Página1"
