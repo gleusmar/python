@@ -30,6 +30,7 @@ options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
 
 # Configuração para GitHub Actions (usa Chrome do sistema)
+print("Iniciando navegador...", flush=True)
 if os.environ.get('GITHUB_ACTIONS'):
     options.add_argument("--disable-extensions")
     options.add_argument("--disable-gpu")
@@ -42,9 +43,13 @@ else:
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
 
+print("Navegador iniciado", flush=True)
 driver.maximize_window()
+driver.set_page_load_timeout(120)
 action = ActionChains(driver)
+print("Acessando site...", flush=True)
 driver.get("http://2896prd.cloudmv.com.br/sigss")
+print("Site acessado", flush=True)
 tempo = WebDriverWait(driver, 10)
 usuario = os.environ.get('USUARIO', '04957832188')
 senha = os.environ.get('SENHA', 'XLGPG@x@UQ9JTQv')
@@ -485,6 +490,7 @@ def set_competencia_current() -> bool:
   except Exception:
     return False
 
+print("Buscando planilha...", flush=True)
 df = pd.DataFrame(getAutorizacoes())
 sucesso = 0
 problemas = 0

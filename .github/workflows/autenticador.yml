@@ -46,7 +46,7 @@ jobs:
           USUARIO: ${{ secrets.USUARIO }}
           SENHA: ${{ secrets.SENHA }}
         run: |
-          python test.py
+          python -u test.py
         timeout-minutes: 360  # 6 horas (limite máximo do GitHub Actions)
       
       - name: Upload debug artifacts
