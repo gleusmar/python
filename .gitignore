@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
+autorizador/
+autorizador-env/
+autorizador_venv/
+
+# Credenciais e tokens locais (nunca versionar)
+credentials*.json
+token.json
+
+# Artefatos de debug do autenticador
+login_timeout.png
+login_timeout.html
+debug_login.py
+
+# Arquivos de lock do LibreOffice
+.~lock.*
