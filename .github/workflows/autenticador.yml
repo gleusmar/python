@@ -39,6 +39,10 @@ jobs:
           echo "$CREDENTIALS3_JSON" > credentials3.json
           echo "CREDENTIALS_FILE=credentials3.json" >> $GITHUB_ENV
       
+      - name: Test connectivity to MV server
+        run: |
+          curl -v --max-time 30 -o /dev/null "http://2896prd.cloudmv.com.br/sigss" || true
+      
       - name: Run autenticador
         env:
           USUARIO: ${{ secrets.USUARIO }}

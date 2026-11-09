@@ -75,6 +75,9 @@ def logaAcessa():
       with open("login_timeout.html","w",encoding="utf-8") as f:
         f.write(driver.page_source)
       print("Debug salvo em login_timeout.png / login_timeout.html")
+      print("=== Início do page_source ===")
+      print(driver.page_source[:2000])
+      print("=== Fim do page_source ===")
     except Exception:
       pass
     raise
