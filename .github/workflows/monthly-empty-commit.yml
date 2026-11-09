@@ -1,0 +1,25 @@
+name: Monthly Empty Commit
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'  # Dia 1 de cada mês à meia-noite UTC
+  workflow_dispatch:  # Permite execução manual
+
+jobs:
+  empty-commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Create empty commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit --allow-empty -m "Monthly activity commit [skip ci]"
+          git push

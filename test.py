@@ -63,7 +63,21 @@ class AnyEc:
             except:
                 pass
 def logaAcessa():
-  user_el = tempo.until(EC.visibility_of_element_located((By.ID,'username')))
+  print("URL após driver.get: " + str(driver.current_url))
+  print("Título: " + str(driver.title))
+  try:
+    user_el = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID,'username')))
+  except Exception:
+    try:
+      print("URL no timeout: " + str(driver.current_url))
+      print("Título no timeout: " + str(driver.title))
+      driver.save_screenshot("login_timeout.png")
+      with open("login_timeout.html","w",encoding="utf-8") as f:
+        f.write(driver.page_source)
+      print("Debug salvo em login_timeout.png / login_timeout.html")
+    except Exception:
+      pass
+    raise
   pass_el = tempo.until(EC.visibility_of_element_located((By.ID,'password')))
   try:
     user_el.clear()

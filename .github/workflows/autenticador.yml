@@ -46,3 +46,13 @@ jobs:
         run: |
           python test.py
         timeout-minutes: 360  # 6 horas (limite máximo do GitHub Actions)
+      
+      - name: Upload debug artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: login-debug
+          path: |
+            login_timeout.png
+            login_timeout.html
+          if-no-files-found: ignore
