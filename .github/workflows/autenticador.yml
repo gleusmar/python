@@ -25,11 +25,9 @@ jobs:
         run: |
           pip install -r requirements.txt
       
-      - name: Install Chrome and ChromeDriver
+      - name: Check preinstalled Chrome
         run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium-browser
-          sudo apt-get install -y chromium-chromedriver
+          google-chrome --version
       
       - name: Setup credentials
         env:

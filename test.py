@@ -34,9 +34,8 @@ if os.environ.get('GITHUB_ACTIONS'):
     options.add_argument("--disable-extensions")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
-    options.binary_location = "/usr/bin/chromium-browser"
-    service = Service(executable_path="/usr/bin/chromedriver")
-    driver = webdriver.Chrome(service=service, options=options)
+    options.binary_location = "/usr/bin/google-chrome"
+    driver = webdriver.Chrome(options=options)
 else:
     # Configuração local (usa webdriver-manager)
     from webdriver_manager.chrome import ChromeDriverManager
